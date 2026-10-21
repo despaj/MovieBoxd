@@ -42,9 +42,15 @@ public class MovieController {
         if (user == null) return "redirect:/login";
 
         boolean searching = q != null && !q.isBlank();
-        List<Map<String, Object>> movies = searching ? tmdb.search(q.trim()) : tmdb.popular();
+        List<Long> ids = movies.stream().map(m -> (Long) m.get("id")).toList();
+        Map<Long, Double> avgs = new HashMap<>();
+        if (!ids.isEmpty()) {
+            for (Object[] row : reviews.averageRatings(ids)) {
+                avgs.put((Long) row[0], round((Double) row[1]));
+            }
+        }
         for (Map<String, Object> movie : movies) {
-            movie.put("avg", round(reviews.averageRating((Long) movie.get("id"))));
+            movie.put("avg", avgs.get((Long) movie.get("id")));
         }
 
         model.addAttribute("user", user);

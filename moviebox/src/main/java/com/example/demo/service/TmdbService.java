@@ -25,9 +25,23 @@ public class TmdbService {
         return apiKey != null && !apiKey.isBlank();
     }
 
-    public List<Map<String, Object>> popular() {
-        return list("/movie/popular", "");
+private List<Map<String, Object>> popularCache;
+private long popularAt;
+
+public synchronized List<Map<String, Object>> popular() {
+    if (popularCache == null || System.currentTimeMillis() - popularAt > 600_000) {
+        List<Map<String, Object>> fresh = list("/movie/popular", "");
+        if (!fresh.isEmpty()) {
+            popularCache = fresh;
+            popularAt = System.currentTimeMillis();
+        } else if (popularCache == null) {
+            return fresh;
+        }
     }
+    List<Map<String, Object>> copy = new ArrayList<>();
+    for (Map<String, Object> m : popularCache) copy.add(new LinkedHashMap<>(m));
+    return copy;
+}
 
     public List<Map<String, Object>> search(String query) {
         return list("/search/movie", query);
