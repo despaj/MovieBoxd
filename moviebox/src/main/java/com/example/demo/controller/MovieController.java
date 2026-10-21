@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.util.HashMap;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -42,6 +43,8 @@ public class MovieController {
         if (user == null) return "redirect:/login";
 
         boolean searching = q != null && !q.isBlank();
+        List<Map<String, Object>> movies = searching ? tmdb.search(q.trim()) : tmdb.popular();
+
         List<Long> ids = movies.stream().map(m -> (Long) m.get("id")).toList();
         Map<Long, Double> avgs = new HashMap<>();
         if (!ids.isEmpty()) {
